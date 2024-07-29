@@ -1,0 +1,17 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.color {
+  border-color: black !important;
+  border-radius: 40px !important;
+}
+
+.small-input {
+  max-width: 100px; /* ou qualquer valor desejado */
+}
+
+.custom-margin {
+  margin-top: -450px;
+}

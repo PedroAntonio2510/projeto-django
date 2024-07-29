@@ -13,10 +13,7 @@ def register_user(request):
     name = request.POST.get('name')
     email = request.POST.get('email')
     phone_number = request.POST.get('phone_number')
-        
-        # Validação básica (adapte conforme necessário)
     if not name or not email:
-            # Retornar uma mensagem de erro ou renderizar a página com um contexto de erro
       return render(request, 'register_user.html', {'error': 'Todos os campos são obrigatórios'})
     try:
       user = User(name=name, email=email, phone_number=phone_number)
