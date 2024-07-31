@@ -15,3 +15,8 @@
 .custom-margin {
   margin-top: -450px;
 }
+
+.custom-vh {
+  height: 30vh !important;
+}
+

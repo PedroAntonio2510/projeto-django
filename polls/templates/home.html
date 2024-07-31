@@ -5,38 +5,172 @@
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
 {% endblock %}
 {% block content %}
+<form action="{% url 'home' %}" method="post">
+  {% csrf_token %}
+  <div class="d-flex justify-content-center align-items-center ">
+    <div class="col-auto">
+      <input type="text" name="name" id="" class="form-control" aria-describedby="passwordHelpInline" placeholder="Product name" required>
+    </div>
+    <div class="col-auto">
+      <input type="text" id="" name="code" class="form-control" aria-describedby="passwordHelpInline" placeholder="Product code" required>
+    </div>
+    <div class="col-auto">
+      <input type="text" name="price" class="form-control small-input" step="0.01" aria-label="Dollar amount (with dot and two decimal places)" placeholder="R$" required>
+    </div>
+    <button type="submit" class="btn btn-primary">
+      Register
+    </button>
+  </div>
 </form>
-<div class="d-flex justify-content-center align-items-center vh-100 custom-margin">
-  <div class="col-auto">
-    <input type="password" id="" class="form-control" aria-describedby="passwordHelpInline" placeholder="Nome do produto">
-  </div>
-  <div class="col-auto">
-    <input type="password" id="" class="form-control" aria-describedby="passwordHelpInline" placeholder="Preço">
-  </div>
-  <div class="col-auto">
-    <input type="text" class="form-control small-input" aria-label="Dollar amount (with dot and two decimal places)" placeholder="R$">
-  </div>
-  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-    Register
-  </button>
-</div>
-<!-- Button trigger modal -->
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Produto</th>
+      <th scope="col">Código</th>
+      <th scope="col">Valor</th>
+      <th scope="col"></th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if products %}
+      {% for product in products %}
+      <tr>
+        <th scope="row">{{ product.id }}</th>
+        <td>{{ product.name }}</td>
+        <td>{{ product.code }}</td>
+        <td>{{ product.price }}</td>
+        <td>
+          <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#editProductModal"
+                  data-id="{{ product.id }}"
+                  data-name="{{ product.name }}"
+                  data-code="{{ product.code }}"
+                  data-price="{{ product.price }}">
+              Editar
+          </button>
+        </td>
+        <td>
+          <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProductModal"
+                  data-id="{{ product.id }}"
+                  data-name="{{ product.name }}"
+                  data-code="{{ product.code }}"
+                  data-price="{{ product.price }}">
+              Deletar
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    {% endif %}
+  </tbody>
+</table>
+<h2 class="mt-5">Products Registered Today</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
 
-<!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <th>Registered At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.created_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+<!-- Modal de Edição -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="editProductModalLabel">Editar Produto</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form method="post" action="{% url 'home' %}">
+              {% csrf_token %}
+              <div class="modal-body">
+                  <input type="hidden" id="product-id" name="id">
+                  <div class="mb-3">
+                      <label for="name" class="form-label">Nome</label>
+                      <input type="text" class="form-control" id="product-name" name="name" required>
+                  </div>
+                  <div class="mb-3">
+                      <label for="code" class="form-label">Código</label>
+                      <input type="text" class="form-control" id="product-code" name="code" required>
+                  </div>
+                  <div class="mb-3">
+                      <label for="price" class="form-label">Preço</label>
+                      <input type="number" class="form-control" id="product-price" name="price" step="0.01" required>
+                  </div>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                  <button type="submit" class="btn btn-primary" name="edit_product">Salvar alterações</button>
+              </div>
+          </form>
+      </div>
+  </div>
+</div>
+
+<!-- Modal de Exclusão -->
+<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Deseja cadastrar esse produto?</h1>
+        <h5 class="modal-title" id="deleteProductModalLabel">Confirmar Exclusão</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        Tem certeza de que deseja excluir este produto?
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+        <form id="delete-form" method="post" action="{% url 'delete_product' %}">
+          {% csrf_token %}
+          <input type="hidden" name="id" id="product-id-to-delete">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Excluir</button>
+        </form>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var editProductModal = document.getElementById('editProductModal');
+            editProductModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var id = button.getAttribute('data-id');
+                var name = button.getAttribute('data-name');
+                var code = button.getAttribute('data-code');
+                var price = button.getAttribute('data-price');
+
+                var modal = editProductModal.querySelector('form');
+                modal.querySelector('#product-id').value = id;
+                modal.querySelector('#product-name').value = name;
+                modal.querySelector('#product-code').value = code;
+                modal.querySelector('#product-price').value = price;
+            });
+        });
+        
+        document.addEventListener('DOMContentLoaded', function () {
+          var deleteProductModal = document.getElementById('deleteProductModal');
+          deleteProductModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+
+            var form = deleteProductModal.querySelector('form');
+            form.querySelector('#product-id-to-delete').value = id;
+          });
+        });
+
+</script>
+
 {% endblock %}
